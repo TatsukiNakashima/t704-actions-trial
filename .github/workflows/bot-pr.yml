@@ -1,0 +1,22 @@
+name: bot-pr
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          b=bot/${{ github.run_id }}
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git switch -c $b
+          echo "bot ${{ github.run_id }}" > knowledge/bot-${{ github.run_id }}.md
+          git add knowledge && git commit -m "bot change" && git push origin $b
+          gh pr create --title "bot PR ${{ github.run_id }}" --body "made with GITHUB_TOKEN" --head $b
+          gh pr merge $b --auto --squash || echo "auto-merge enable failed"

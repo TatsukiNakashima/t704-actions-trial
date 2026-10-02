@@ -1,0 +1,27 @@
+name: claude-scheduled
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            List the files under knowledge/ and write a one-line summary per file into report/summary-${{ github.run_id }}.md.
+            Then create a branch claude/${{ github.run_id }}, commit that file, push it, and open a pull request to main with `gh pr create`.
+          claude_args: |
+            --model claude-haiku-4-5-20251001
+            --max-turns 15
+            --allowedTools "Read,Write,Bash(git:*),Bash(gh pr create:*),Bash(ls:*),Bash(mkdir:*)"

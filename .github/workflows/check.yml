@@ -1,0 +1,11 @@
+name: check
+on:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: fail if any file contains NG
+        run: |
+          if grep -rl "NG" knowledge/; then echo "found NG"; exit 1; fi
